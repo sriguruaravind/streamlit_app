@@ -21,7 +21,7 @@ DEST_DB_CONFIG = {
     "password": "DataUsr@2025",
 }
 
-# Function to connect to database and execute query using SQLAlchemy
+# Function to connect to the database and execute a query using SQLAlchemy
 def connect_and_query(db_config, query):
     # Construct SQLAlchemy connection URL for SQL Server
     conn_str = f"mssql+pyodbc://{db_config['username']}:{db_config['password']}@{db_config['server']}/{db_config['database']}?driver=ODBC+Driver+17+for+SQL+Server"
@@ -29,20 +29,15 @@ def connect_and_query(db_config, query):
     try:
         # Create SQLAlchemy engine
         engine = create_engine(conn_str, pool_size=10, max_overflow=20, pool_timeout=30)
-        
-        # Attempt to query the database
-        df = pd.read_sql(query, engine)
-        
-        # Ensure the connection is closed after execution
-        engine.dispose()
+
+        # Connect to the database and execute the query using pd.read_sql
+        df = pd.read_sql(query, engine)  # This automatically uses the engine to query the database
         
         return df
-    except pyodbc.Error as e:
-        st.error(f"Database connection error: {e}")
-        return pd.DataFrame()  # Return empty DataFrame on error
     except Exception as e:
         st.error(f"Error executing query: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame()  # Return an empty DataFrame on error
+
 
 # SQL query for actual data
 actual_query = """
