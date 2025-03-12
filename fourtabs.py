@@ -3,6 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime, timedelta
 import plotly.express as px
+import pyodbc
 
 # Connection parameters for actual data
 SRC_DB_CONFIG = {
@@ -25,12 +26,23 @@ def connect_and_query(db_config, query):
     # Construct SQLAlchemy connection URL for SQL Server
     conn_str = f"mssql+pyodbc://{db_config['username']}:{db_config['password']}@{db_config['server']}/{db_config['database']}?driver=ODBC+Driver+17+for+SQL+Server"
     
-    # Create SQLAlchemy engine
-    engine = create_engine(conn_str)
-    
-    # Connect to the database and execute query
-    df = pd.read_sql(query, engine)
-    return df
+    try:
+        # Create SQLAlchemy engine
+        engine = create_engine(conn_str, pool_size=10, max_overflow=20, pool_timeout=30)
+        
+        # Attempt to query the database
+        df = pd.read_sql(query, engine)
+        
+        # Ensure the connection is closed after execution
+        engine.dispose()
+        
+        return df
+    except pyodbc.Error as e:
+        st.error(f"Database connection error: {e}")
+        return pd.DataFrame()  # Return empty DataFrame on error
+    except Exception as e:
+        st.error(f"Error executing query: {e}")
+        return pd.DataFrame()
 
 # SQL query for actual data
 actual_query = """
@@ -101,7 +113,6 @@ if not t_minus_1_data.empty:
     st.plotly_chart(fig_combined, use_container_width=True)
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
-
 
 # Tab selection for different columns
 tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
@@ -198,7 +209,6 @@ def display_data_for_column(actual_col, predicted_col):
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-
     # Prediction accuracy pie chart
     st.subheader('Prediction Accuracy')
     within_range = len(filtered_data_bar[abs(filtered_data_bar[actual_col] - filtered_data_bar[predicted_col]) / filtered_data_bar[actual_col] * 100 <= 10])
@@ -210,7 +220,6 @@ def display_data_for_column(actual_col, predicted_col):
         color_discrete_sequence=['#FF6347', '#4682B4']
     )
     st.plotly_chart(fig_pie, use_container_width=True)
-
 
     # Specific date selection
     st.subheader('View Data for a Specific Date')
