@@ -31,7 +31,7 @@ df = create_synthetic_data_for_one_month()
 
 # Streamlit setup
 st.set_page_config(layout="wide")
-st.title('Actual vs Predicted Dashboard for 1 Month')
+st.title('Actual vs Predicted Dashboard')
 
 # Display the generated data as a table
 #st.subheader('Actual vs Predicted Data (Last 1 Month)')
