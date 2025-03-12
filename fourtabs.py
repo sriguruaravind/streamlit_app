@@ -34,8 +34,8 @@ st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard for 1 Month')
 
 # Display the generated data as a table
-st.subheader('Actual vs Predicted Data (Last 1 Month)')
-st.write(df)
+#st.subheader('Actual vs Predicted Data (Last 1 Month)')
+#st.write(df)
 
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
