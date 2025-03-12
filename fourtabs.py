@@ -1,14 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 from datetime import datetime, timedelta
+import plotly.express as px
 
-# Function to create synthetic data for 3 months
-def create_synthetic_data():
-    # Date range for the last 3 months
+# Function to create synthetic data for 1 month
+def create_synthetic_data_for_one_month():
+    # Date range for the last month (30 days)
     end_date = datetime.today()
-    start_date = end_date - timedelta(days=90)
+    start_date = end_date - timedelta(days=30)
     date_range = pd.date_range(start=start_date, end=end_date, freq='D')
 
     # Randomized data for actual and predicted columns
@@ -26,40 +26,42 @@ def create_synthetic_data():
     
     return pd.DataFrame(data)
 
-# Generate synthetic data for the last three months
-actual_df = create_synthetic_data()
-predicted_df = create_synthetic_data()
+# Generate synthetic data for the last month (30 days)
+df = create_synthetic_data_for_one_month()
 
 # Streamlit setup
 st.set_page_config(layout="wide")
-st.title('Actual vs Predicted Dashboard')
+st.title('Actual vs Predicted Dashboard for 1 Month')
 
-# Debugging: Display the columns of the actual and predicted DataFrames
-st.write("Actual DataFrame Columns:", actual_df.columns)
-st.write("Predicted DataFrame Columns:", predicted_df.columns)
+# Display the generated data as a table
+st.subheader('Actual vs Predicted Data (Last 1 Month)')
+st.write(df)
 
-# Convert 'date' column to datetime format if it's not already
-actual_df['date'] = pd.to_datetime(actual_df['date'], errors='coerce')
-predicted_df['date'] = pd.to_datetime(predicted_df['date'], errors='coerce')
-
-# Merge the actual and predicted data
-merged_df = pd.merge(actual_df, predicted_df, on='date', how='inner')
-
-# Sort data by date
-merged_df = merged_df.sort_values(by='date')
-
-# Calculate T-1 (previous day)
-previous_day = merged_df['date'].max() - timedelta(days=1)
+# Optional: you can format the data as a table for better presentation
+st.table(df)
 
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
 
-t_minus_1_data = merged_df[merged_df['date'].dt.date == previous_day.date()]  # Get T-1 day's data
+# Calculate T-1 (previous day)
+previous_day = df['date'].max() - timedelta(days=1)
+
+t_minus_1_data = df[df['date'] == previous_day]  # Get T-1 day's data
 
 if not t_minus_1_data.empty:
     t_minus_1_date = t_minus_1_data['date'].iloc[0].strftime('%Y-%m-%d')
-    actual_values = [t_minus_1_data['PayopNew'].iloc[0], t_minus_1_data['PayopReview'].iloc[0], t_minus_1_data['FreeopNew'].iloc[0], t_minus_1_data['FreeopReview'].iloc[0]]
-    predicted_values = [t_minus_1_data['EXP_PAY_NEW'].iloc[0], t_minus_1_data['EXP_PAY_REV'].iloc[0], t_minus_1_data['EXP_FREE_NEW'].iloc[0], t_minus_1_data['EXP_FREE_REV'].iloc[0]]
+    actual_values = [
+        t_minus_1_data['PayopNew'].iloc[0],
+        t_minus_1_data['PayopReview'].iloc[0],
+        t_minus_1_data['FreeopNew'].iloc[0],
+        t_minus_1_data['FreeopReview'].iloc[0]
+    ]
+    predicted_values = [
+        t_minus_1_data['EXP_PAY_NEW'].iloc[0],
+        t_minus_1_data['EXP_PAY_REV'].iloc[0],
+        t_minus_1_data['EXP_FREE_NEW'].iloc[0],
+        t_minus_1_data['EXP_FREE_REV'].iloc[0]
+    ]
     categories = ['PayopNew', 'PayopReview', 'FreeopNew', 'FreeopReview']
 
     combined_df = pd.DataFrame({
@@ -79,13 +81,14 @@ if not t_minus_1_data.empty:
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
+
 # Tab selection for different columns
 tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
 # Function to create and display the charts and metrics
 def display_data_for_column(actual_col, predicted_col):
     # Filter data for the selected column
-    column_data = merged_df[['date', actual_col, predicted_col]]
+    column_data = df[['date', actual_col, predicted_col]]
 
     # Bar chart section
     st.subheader(f'Actual vs Predicted (Bar Chart) ({actual_col} vs {predicted_col})')
@@ -190,10 +193,10 @@ def display_data_for_column(actual_col, predicted_col):
 
     # Specific date selection
     st.subheader('View Data for a Specific Date')
-    date_to_view = st.date_input('Select a date', min_value=merged_df['date'].min().date(), max_value=merged_df['date'].max().date())
+    date_to_view = st.date_input('Select a date', min_value=df['date'].min().date(), max_value=df['date'].max().date())
 
     if st.button('View'):
-        specific_date_data = merged_df[merged_df['date'].dt.date == date_to_view]
+        specific_date_data = df[df['date'].dt.date == date_to_view]
         if not specific_date_data.empty:
             st.write(f"### Data for {date_to_view}:")
             st.write(specific_date_data[['date', actual_col, predicted_col]])
