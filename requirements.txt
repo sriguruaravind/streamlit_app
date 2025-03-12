@@ -1,5 +1,4 @@
 SQLAlchemy==2.0.0
-pyodbc==4.0.32
 pandas==2.0.0
 plotly==5.10.0
 streamlit==1.16.0
