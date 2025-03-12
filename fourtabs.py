@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+from sqlalchemy import create_engine
 from datetime import datetime, timedelta
+import plotly.express as px
 
 # Connection parameters for actual data
 SRC_DB_CONFIG = {
@@ -22,8 +22,13 @@ DEST_DB_CONFIG = {
 
 # Function to connect to database and execute query using SQLAlchemy
 def connect_and_query(db_config, query):
+    # Construct SQLAlchemy connection URL for SQL Server
     conn_str = f"mssql+pyodbc://{db_config['username']}:{db_config['password']}@{db_config['server']}/{db_config['database']}?driver=ODBC+Driver+17+for+SQL+Server"
+    
+    # Create SQLAlchemy engine
     engine = create_engine(conn_str)
+    
+    # Connect to the database and execute query
     df = pd.read_sql(query, engine)
     return df
 
@@ -95,8 +100,9 @@ if not t_minus_1_data.empty:
     fig_combined.update_traces(textposition='outside')
     st.plotly_chart(fig_combined, use_container_width=True)
 else:
-    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.')
-    
+    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
+
+
 # Tab selection for different columns
 tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
@@ -218,12 +224,12 @@ def display_data_for_column(actual_col, predicted_col):
         else:
             st.info(f"No data available for {date_to_view}.")
 
-# Call the display function based on selected tab
+# Display data based on the selected column
 if tab == "PayopNew":
     display_data_for_column('PayopNew', 'EXP_PAY_NEW')
 elif tab == "PayopReview":
     display_data_for_column('PayopReview', 'EXP_PAY_REV')
 elif tab == "FreeopNew":
     display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
-elif tab == "FreeopReview":
+else:
     display_data_for_column('FreeopReview', 'EXP_FREE_REV')
