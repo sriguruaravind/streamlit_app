@@ -37,9 +37,6 @@ st.title('Actual vs Predicted Dashboard for 1 Month')
 st.subheader('Actual vs Predicted Data (Last 1 Month)')
 st.write(df)
 
-# Optional: you can format the data as a table for better presentation
-st.table(df)
-
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
 
