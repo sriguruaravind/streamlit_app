@@ -1,7 +1,6 @@
-from altair import to_values
+from sqlalchemy import create_engine
 import streamlit as st
 import pandas as pd
-import pyodbc
 import plotly.express as px
 from datetime import datetime, timedelta
 
@@ -21,12 +20,11 @@ DEST_DB_CONFIG = {
     "password": "DataUsr@2025",
 }
 
-# Function to connect to database and execute query
+# Function to connect to database and execute query using SQLAlchemy
 def connect_and_query(db_config, query):
-    conn_str = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={db_config['server']};DATABASE={db_config['database']};UID={db_config['username']};PWD={db_config['password']}"
-    conn = pyodbc.connect(conn_str)
-    df = pd.read_sql_query(query, conn)
-    conn.close()
+    conn_str = f"mssql+pyodbc://{db_config['username']}:{db_config['password']}@{db_config['server']}/{db_config['database']}?driver=ODBC+Driver+17+for+SQL+Server"
+    engine = create_engine(conn_str)
+    df = pd.read_sql(query, engine)
     return df
 
 # SQL query for actual data
@@ -68,14 +66,6 @@ merged_df = pd.merge(actual_df, predicted_df, on='date', how='inner')
 merged_df['date'] = pd.to_datetime(merged_df['date'])
 merged_df = merged_df.sort_values(by='date')
 
-# Sort data by date
-merged_df['date'] = pd.to_datetime(merged_df['date'])
-merged_df = merged_df.sort_values(by='date')
-
-# Sort data by date
-merged_df['date'] = pd.to_datetime(merged_df['date'])
-merged_df = merged_df.sort_values(by='date')
-
 # Calculate T-1 (previous day)
 previous_day = merged_df['date'].max() - timedelta(days=1)
 
@@ -106,8 +96,7 @@ if not t_minus_1_data.empty:
     st.plotly_chart(fig_combined, use_container_width=True)
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.')
-
-
+    
 # Tab selection for different columns
 tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
