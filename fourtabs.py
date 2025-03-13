@@ -33,6 +33,20 @@ df = create_synthetic_data_for_one_month()
 st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
+# Radio Button to Select Column
+selected_column = st.radio("Select Column to View Prediction", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], index=0, horizontal=True)
+
+# Mapping for the selected column to the respective predicted column
+column_mapping = {
+    "PayopNew": "EXP_PAY_NEW",
+    "PayopReview": "EXP_PAY_REV",
+    "FreeopNew": "EXP_FREE_NEW",
+    "FreeopReview": "EXP_FREE_REV"
+}
+
+actual_col = selected_column
+predicted_col = column_mapping[selected_column]
+
 # --- 1. Graph showing yesterday's values ---
 st.subheader('Actual vs Predicted for Last Day')
 
@@ -43,18 +57,14 @@ t_minus_1_data = df[df['date'] == previous_day]  # Get T-1 day's data
 if not t_minus_1_data.empty:
     t_minus_1_date = t_minus_1_data['date'].iloc[0].strftime('%Y-%m-%d')
     actual_values = [
-        t_minus_1_data['PayopNew'].iloc[0],
-        t_minus_1_data['PayopReview'].iloc[0],
-        t_minus_1_data['FreeopNew'].iloc[0],
-        t_minus_1_data['FreeopReview'].iloc[0]
+        t_minus_1_data[actual_col].iloc[0],
+        t_minus_1_data[selected_column].iloc[0],
     ]
     predicted_values = [
-        t_minus_1_data['EXP_PAY_NEW'].iloc[0],
-        t_minus_1_data['EXP_PAY_REV'].iloc[0],
-        t_minus_1_data['EXP_FREE_NEW'].iloc[0],
-        t_minus_1_data['EXP_FREE_REV'].iloc[0]
+        t_minus_1_data[predicted_col].iloc[0],
+        t_minus_1_data[selected_column].iloc[0],
     ]
-    categories = ['PayopNew', 'PayopReview', 'FreeopNew', 'FreeopReview']
+    categories = [selected_column]
 
     combined_df = pd.DataFrame({
         'Category': categories * 2,
@@ -73,26 +83,11 @@ if not t_minus_1_data.empty:
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
-# --- 2. Radio Button to Select Column to Predict ---
-selected_column = st.radio("Select Column to View Prediction", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], index=0, horizontal=True)
-
-# Mapping for the selected column to the respective predicted column
-column_mapping = {
-    "PayopNew": "EXP_PAY_NEW",
-    "PayopReview": "EXP_PAY_REV",
-    "FreeopNew": "EXP_FREE_NEW",
-    "FreeopReview": "EXP_FREE_REV"
-}
-
-actual_col = selected_column
-predicted_col = column_mapping[selected_column]
-
-# --- 3. Bar Chart ---
+# --- 2. Radio Button to Select Graph Type for Bar Chart ---
 st.subheader(f'{selected_column} vs {predicted_col} Bar Chart')
-display_bar_chart = st.radio('Show Bar Chart', ['Yes'], index=0)
+show_bar_chart = st.radio("Show Bar Chart for " + selected_column, ['Yes', 'No'])
 
-if display_bar_chart == 'Yes':
-    # Bar Chart
+if show_bar_chart == 'Yes':
     column_data = df[['date', actual_col, predicted_col]]
     fig_bar = px.bar(
         column_data, x='date', y=[actual_col, predicted_col],
@@ -103,12 +98,11 @@ if display_bar_chart == 'Yes':
     fig_bar.update_traces(textposition='outside')
     st.plotly_chart(fig_bar, use_container_width=True)
 
-# --- 4. Line Chart ---
+# --- 3. Radio Button to Select Graph Type for Line Chart ---
 st.subheader(f'{selected_column} vs {predicted_col} Line Chart')
-display_line_chart = st.radio('Show Line Chart', ['Yes'], index=0)
+show_line_chart = st.radio("Show Line Chart for " + selected_column, ['Yes', 'No'])
 
-if display_line_chart == 'Yes':
-    # Line Chart
+if show_line_chart == 'Yes':
     column_data = df[['date', actual_col, predicted_col]]
     fig_line = px.line(
         column_data, x='date', y=[actual_col, predicted_col],
@@ -117,12 +111,11 @@ if display_line_chart == 'Yes':
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
-# --- 5. Performance Metrics ---
+# --- 4. Radio Button to Select Graph Type for Metrics ---
 st.subheader(f'{selected_column} vs {predicted_col} Performance Metrics')
-display_metrics = st.radio('Show Performance Metrics', ['Yes'], index=0)
+show_metrics = st.radio("Show Metrics for " + selected_column, ['Yes', 'No'])
 
-if display_metrics == 'Yes':
-    # Performance Metrics
+if show_metrics == 'Yes':
     column_data = df[['date', actual_col, predicted_col]]
     last_7_days_data = column_data.tail(7)
     avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
@@ -138,12 +131,11 @@ if display_metrics == 'Yes':
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-# --- 6. Pie Chart ---
+# --- 5. Radio Button to Select Graph Type for Pie Chart ---
 st.subheader(f'{selected_column} vs {predicted_col} Pie Chart')
-display_pie_chart = st.radio('Show Pie Chart', ['Yes'], index=0)
+show_pie_chart = st.radio("Show Pie Chart for " + selected_column, ['Yes', 'No'])
 
-if display_pie_chart == 'Yes':
-    # Pie Chart
+if show_pie_chart == 'Yes':
     column_data = df[['date', actual_col, predicted_col]]
     within_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 <= 10])
     out_of_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 > 10])
@@ -154,4 +146,3 @@ if display_pie_chart == 'Yes':
         color_discrete_sequence=['#FF6347', '#4682B4']
     )
     st.plotly_chart(fig_pie, use_container_width=True)
-    
