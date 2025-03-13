@@ -34,8 +34,8 @@ st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
 # Display the generated data as a table
-# st.subheader('Actual vs Predicted Data (Last 1 Month)')
-# st.write(df)
+#st.subheader('Actual vs Predicted Data (Last 1 Month)')
+#st.write(df)
 
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
@@ -118,9 +118,6 @@ def display_data_for_column(actual_col, predicted_col):
     else:
         filtered_data_bar = column_data
 
-    # Tab selection for different columns
-    tab1 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-    
     fig_bar = px.bar(
         filtered_data_bar, x='date', y=[actual_col, predicted_col],
         title=f'Actual vs Predicted ({selected_range_bar})',
@@ -161,9 +158,6 @@ def display_data_for_column(actual_col, predicted_col):
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
-    # Tab selection for different columns
-    tab2 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-
     # Performance metrics section for last 7 days
     st.subheader('Performance Metrics (Last 7 Days)')
     last_7_days_data = filtered_data_bar.tail(7)
@@ -180,8 +174,6 @@ def display_data_for_column(actual_col, predicted_col):
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-    # Tab selection for different columns
-    tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
     # Prediction accuracy pie chart
     st.subheader('Prediction Accuracy')
@@ -194,6 +186,7 @@ def display_data_for_column(actual_col, predicted_col):
         color_discrete_sequence=['#FF6347', '#4682B4']
     )
     st.plotly_chart(fig_pie, use_container_width=True)
+
 
     # Specific date selection
     st.subheader('View Data for a Specific Date')
@@ -213,16 +206,6 @@ if tab == "PayopNew":
 elif tab == "PayopReview":
     display_data_for_column('PayopReview', 'EXP_PAY_REV')
 elif tab == "FreeopNew":
-    display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
-else:
-    display_data_for_column('FreeopReview', 'EXP_FREE_REV')
-
-# Handle display based on the second radio button
-if tab_2 == "PayopNew":
-    display_data_for_column('PayopNew', 'EXP_PAY_NEW')
-elif tab_2 == "PayopReview":
-    display_data_for_column('PayopReview', 'EXP_PAY_REV')
-elif tab_2 == "FreeopNew":
     display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
 else:
     display_data_for_column('FreeopReview', 'EXP_FREE_REV')
