@@ -82,9 +82,6 @@ else:
 # Tab selection for different columns
 tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
-# Add a second radio button to select a comparison column
-tab_2 = st.radio("Select Comparison Column", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-
 # Function to create and display the charts and metrics
 def display_data_for_column(actual_col, predicted_col):
     # Filter data for the selected column
@@ -121,6 +118,9 @@ def display_data_for_column(actual_col, predicted_col):
     else:
         filtered_data_bar = column_data
 
+# Tab selection for different columns
+tab1 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+    
     fig_bar = px.bar(
         filtered_data_bar, x='date', y=[actual_col, predicted_col],
         title=f'Actual vs Predicted ({selected_range_bar})',
@@ -161,6 +161,9 @@ def display_data_for_column(actual_col, predicted_col):
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
+# Tab selection for different columns
+tab2 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+
     # Performance metrics section for last 7 days
     st.subheader('Performance Metrics (Last 7 Days)')
     last_7_days_data = filtered_data_bar.tail(7)
@@ -176,6 +179,9 @@ def display_data_for_column(actual_col, predicted_col):
     col2.metric(label='✅ Days Within Threshold', value=f'{within_threshold}/{total_days}')
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
+
+# Tab selection for different columns
+tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
     # Prediction accuracy pie chart
     st.subheader('Prediction Accuracy')
