@@ -79,133 +79,123 @@ else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
 
-# Tab selection for different columns
-tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+# Creating individual radio buttons for different graphs and metrics
+graph_tabs = st.radio("Select Graph Type", ["Bar Chart", "Line Chart", "Prediction Accuracy", "Metrics"], horizontal=True)
 
-# Function to create and display the charts and metrics
-def display_data_for_column(actual_col, predicted_col):
+# Function to create and display the charts and metrics for a selected category
+def display_data_for_column(actual_col, predicted_col, selected_tab):
     # Filter data for the selected column
     column_data = df[['date', actual_col, predicted_col]]
 
-    # Bar chart section
-    st.subheader(f'Actual vs Predicted (Bar Chart) ({actual_col} vs {predicted_col})')
+    # Handling Bar Chart
+    if selected_tab == "Bar Chart":
+        st.subheader(f'Actual vs Predicted (Bar Chart) ({actual_col} vs {predicted_col})')
 
-    # Buttons to select data range for the bar chart
-    selected_range_bar = 'Last 1 Week'
-    col3, col4, col5 = st.columns([1, 1, 1])
+        selected_range_bar = 'Last 1 Week'
+        col3, col4, col5 = st.columns([1, 1, 1])
 
-    with col3:
-        if st.button('Last 1 Week(Bar)'):
+        with col3:
+            if st.button('Last 1 Week(Bar)'):
+                filtered_data_bar = column_data.tail(7)
+                selected_range_bar = 'Last 1 Week'
+
+        with col4:
+            if st.button('Last 1 Month(Bar)'):
+                filtered_data_bar = column_data.tail(30)
+                selected_range_bar = 'Last 1 Month'
+
+        with col5:
+            if st.button('Last 3 Months(Bar)'):
+                filtered_data_bar = column_data.tail(90)
+                selected_range_bar = 'Last 3 Months'
+
+        if selected_range_bar == 'Last 1 Week':
             filtered_data_bar = column_data.tail(7)
-            selected_range_bar = 'Last 1 Week'
-
-    with col4:
-        if st.button('Last 1 Month(Bar)'):
+        elif selected_range_bar == 'Last 1 Month':
             filtered_data_bar = column_data.tail(30)
-            selected_range_bar = 'Last 1 Month'
-
-    with col5:
-        if st.button('Last 3 Months(Bar)'):
+        elif selected_range_bar == 'Last 3 Months':
             filtered_data_bar = column_data.tail(90)
-            selected_range_bar = 'Last 3 Months'
-
-    if selected_range_bar == 'Last 1 Week':
-        filtered_data_bar = column_data.tail(7)
-    elif selected_range_bar == 'Last 1 Month':
-        filtered_data_bar = column_data.tail(30)
-    elif selected_range_bar == 'Last 3 Months':
-        filtered_data_bar = column_data.tail(90)
-    else:
-        filtered_data_bar = column_data
-
-    fig_bar = px.bar(
-        filtered_data_bar, x='date', y=[actual_col, predicted_col],
-        title=f'Actual vs Predicted ({selected_range_bar})',
-        barmode='group', color_discrete_sequence=['#FF6347', '#4682B4'],
-        text_auto=True
-    )
-    fig_bar.update_traces(textposition='outside')
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-    # Line chart section
-    st.subheader(f'Actual vs Predicted (Line Chart) ({actual_col} vs {predicted_col})')
-
-    # Buttons to select data range for the line chart
-    selected_range_line = 'All Time'
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
-        if st.button('Last 1 Week(Line)'):
-            filtered_data_line = column_data.tail(7)
-            selected_range_line = 'Last 1 Week'
-
-    with col2:
-        if st.button('Last 1 Month(Line)'):
-            filtered_data_line = column_data.tail(30)
-            selected_range_line = 'Last 1 Month'
-
-    if selected_range_line == 'Last 1 Week':
-        filtered_data_line = column_data.tail(7)
-    elif selected_range_line == 'Last 1 Month':
-        filtered_data_line = column_data.tail(30)
-    else:
-        filtered_data_line = column_data
-
-    fig_line = px.line(
-        filtered_data_line, x='date', y=[actual_col, predicted_col],
-        title=f'Actual vs Predicted ({selected_range_line})',
-        color_discrete_sequence=['#FF6347', '#4682B4']
-    )
-    st.plotly_chart(fig_line, use_container_width=True)
-
-    # Performance metrics section for last 7 days
-    st.subheader('Performance Metrics (Last 7 Days)')
-    last_7_days_data = filtered_data_bar.tail(7)
-    avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
-    highest_deviation_day = last_7_days_data.loc[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).idxmax()]
-    lowest_deviation_day = last_7_days_data.loc[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).idxmin()]
-    within_threshold = len(last_7_days_data[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100) <= 10])
-    total_days = len(last_7_days_data)
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric(label='📊 Average Deviation (Last 7 Days)', value=f'{avg_deviation_7d}%')
-    col2.metric(label='✅ Days Within Threshold', value=f'{within_threshold}/{total_days}')
-    col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
-    col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
-
-
-    # Prediction accuracy pie chart
-    st.subheader('Prediction Accuracy')
-    within_range = len(filtered_data_bar[abs(filtered_data_bar[actual_col] - filtered_data_bar[predicted_col]) / filtered_data_bar[actual_col] * 100 <= 10])
-    out_of_range = len(filtered_data_bar[abs(filtered_data_bar[actual_col] - filtered_data_bar[predicted_col]) / filtered_data_bar[actual_col] * 100 > 10])
-    fig_pie = px.pie(
-        names=['Within Threshold', 'Exceeded Threshold'],
-        values=[within_range, out_of_range],
-        title='Predictions Within vs Exceeded Threshold',
-        color_discrete_sequence=['#FF6347', '#4682B4']
-    )
-    st.plotly_chart(fig_pie, use_container_width=True)
-
-
-    # Specific date selection
-    st.subheader('View Data for a Specific Date')
-    date_to_view = st.date_input('Select a date', min_value=df['date'].min().date(), max_value=df['date'].max().date())
-
-    if st.button('View'):
-        specific_date_data = df[df['date'].dt.date == date_to_view]
-        if not specific_date_data.empty:
-            st.write(f"### Data for {date_to_view}:")
-            st.write(specific_date_data[['date', actual_col, predicted_col]])
         else:
-            st.info(f"No data available for {date_to_view}.")
+            filtered_data_bar = column_data
 
-# Display data based on the selected column
+        fig_bar = px.bar(
+            filtered_data_bar, x='date', y=[actual_col, predicted_col],
+            title=f'Actual vs Predicted ({selected_range_bar})',
+            barmode='group', color_discrete_sequence=['#FF6347', '#4682B4'],
+            text_auto=True
+        )
+        fig_bar.update_traces(textposition='outside')
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+    # Handling Line Chart
+    if selected_tab == "Line Chart":
+        st.subheader(f'Actual vs Predicted (Line Chart) ({actual_col} vs {predicted_col})')
+
+        selected_range_line = 'All Time'
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            if st.button('Last 1 Week(Line)'):
+                filtered_data_line = column_data.tail(7)
+                selected_range_line = 'Last 1 Week'
+
+        with col2:
+            if st.button('Last 1 Month(Line)'):
+                filtered_data_line = column_data.tail(30)
+                selected_range_line = 'Last 1 Month'
+
+        if selected_range_line == 'Last 1 Week':
+            filtered_data_line = column_data.tail(7)
+        elif selected_range_line == 'Last 1 Month':
+            filtered_data_line = column_data.tail(30)
+        else:
+            filtered_data_line = column_data
+
+        fig_line = px.line(
+            filtered_data_line, x='date', y=[actual_col, predicted_col],
+            title=f'Actual vs Predicted ({selected_range_line})',
+            color_discrete_sequence=['#FF6347', '#4682B4']
+        )
+        st.plotly_chart(fig_line, use_container_width=True)
+
+    # Handling Prediction Accuracy Pie Chart
+    if selected_tab == "Prediction Accuracy":
+        st.subheader('Prediction Accuracy')
+        within_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 <= 10])
+        out_of_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 > 10])
+        fig_pie = px.pie(
+            names=['Within Threshold', 'Exceeded Threshold'],
+            values=[within_range, out_of_range],
+            title='Predictions Within vs Exceeded Threshold',
+            color_discrete_sequence=['#FF6347', '#4682B4']
+        )
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+    # Handling Performance Metrics
+    if selected_tab == "Metrics":
+        st.subheader('Performance Metrics (Last 7 Days)')
+        last_7_days_data = column_data.tail(7)
+        avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
+        highest_deviation_day = last_7_days_data.loc[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).idxmax()]
+        lowest_deviation_day = last_7_days_data.loc[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).idxmin()]
+        within_threshold = len(last_7_days_data[(abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100) <= 10])
+        total_days = len(last_7_days_data)
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric(label='📊 Average Deviation (Last 7 Days)', value=f'{avg_deviation_7d}%')
+        col2.metric(label='✅ Days Within Threshold', value=f'{within_threshold}/{total_days}')
+        col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
+        col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
+
+# Select tab for a specific category (PayopNew, PayopReview, FreeopNew, FreeopReview)
+tab = st.radio("Select Category", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+
 if tab == "PayopNew":
-    display_data_for_column('PayopNew', 'EXP_PAY_NEW')
+    display_data_for_column('PayopNew', 'EXP_PAY_NEW', graph_tabs)
 elif tab == "PayopReview":
-    display_data_for_column('PayopReview', 'EXP_PAY_REV')
+    display_data_for_column('PayopReview', 'EXP_PAY_REV', graph_tabs)
 elif tab == "FreeopNew":
-    display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
+    display_data_for_column('FreeopNew', 'EXP_FREE_NEW', graph_tabs)
 else:
-    display_data_for_column('FreeopReview', 'EXP_FREE_REV')
+    display_data_for_column('FreeopReview', 'EXP_FREE_REV', graph_tabs)
