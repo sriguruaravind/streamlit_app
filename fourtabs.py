@@ -48,22 +48,16 @@ if not t_minus_1_data.empty:
     predicted_col = 'EXP_PAY_NEW'
 
     # Getting the actual and predicted values for the selected column
-    actual_values = [
-        t_minus_1_data[actual_col].iloc[0],  # Actual value for selected column
-        t_minus_1_data[actual_col].iloc[0]  # Actual value for selected column
-    ]
-    predicted_values = [
-        t_minus_1_data[predicted_col].iloc[0],  # Predicted value for selected column
-        t_minus_1_data[predicted_col].iloc[0]  # Predicted value for selected column
-    ]
+    actual_values = [t_minus_1_data[actual_col].iloc[0], t_minus_1_data[actual_col].iloc[0]]
+    predicted_values = [t_minus_1_data[predicted_col].iloc[0], t_minus_1_data[predicted_col].iloc[0]]
     
-    categories = [actual_col, predicted_col]  # This should have 2 elements for actual and predicted
+    categories = [actual_col, predicted_col]
 
     # Ensure that categories, actual_values, and predicted_values have the same length
     combined_df = pd.DataFrame({
-        'Category': categories * 2,
+        'Category': categories,
         'Value': actual_values + predicted_values,
-        'Type': ['Actual'] * 2 + ['Predicted'] * 2  # Length of 'Type' matches 'Value'
+        'Type': ['Actual'] * 2 + ['Predicted'] * 2
     })
 
     fig_combined = px.bar(
@@ -165,8 +159,8 @@ col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(label='📊 Average Deviation (Last 7 Days)', value=f'{avg_deviation_7d}%')
 col2.metric(label='✅ Days Within Threshold', value=f'{within_threshold}/{total_days}')
-col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[tab] - lowest_deviation_day['EXP_' + tab]) / lowest_deviation_day[tab] * 100), 2)}%')
-col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[tab] - highest_deviation_day['EXP_' + tab]) / highest_deviation_day[tab] * 100), 2)}%')
+col3.metric(label='📉 Lowest Deviation Day', value=f'{round(abs(lowest_deviation_day[tab] - lowest_deviation_day["EXP_" + tab]) / lowest_deviation_day[tab] * 100, 2)}%')
+col4.metric(label='📈 Highest Deviation Day', value=f'{round(abs(highest_deviation_day[tab] - highest_deviation_day["EXP_" + tab]) / highest_deviation_day[tab] * 100, 2)}%')
 
 # --- 6. Prediction Accuracy Pie Chart ---
 st.subheader('Prediction Accuracy')
