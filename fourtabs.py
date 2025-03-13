@@ -88,19 +88,11 @@ actual_col = selected_column
 predicted_col = column_mapping[selected_column]
 
 # --- 3. Bar Chart ---
-show_bar_chart = st.radio('Show Bar Chart', ['Yes', 'No'], index=0)
+st.subheader(f'{selected_column} vs {predicted_col} Bar Chart')
+display_bar_chart = st.radio('Show Bar Chart', ['Yes'], index=0)
 
-# --- 4. Radio Button to Select the Line Chart ---
-show_line_chart = st.radio('Show Line Chart', ['Yes', 'No'], index=0)
-
-# --- 5. Line Chart ---
-show_metrics = st.radio('Show Performance Metrics', ['Yes', 'No'], index=0)
-
-# --- 6. Performance Metrics ---
-show_pie_chart = st.radio('Show Pie Chart', ['Yes', 'No'], index=0)
-
-# --- Function to create and display the Bar Chart ---
-def display_bar_chart(actual_col, predicted_col):
+if display_bar_chart == 'Yes':
+    # Bar Chart
     column_data = df[['date', actual_col, predicted_col]]
     fig_bar = px.bar(
         column_data, x='date', y=[actual_col, predicted_col],
@@ -111,8 +103,12 @@ def display_bar_chart(actual_col, predicted_col):
     fig_bar.update_traces(textposition='outside')
     st.plotly_chart(fig_bar, use_container_width=True)
 
-# --- Function to create and display the Line Chart ---
-def display_line_chart(actual_col, predicted_col):
+# --- 4. Line Chart ---
+st.subheader(f'{selected_column} vs {predicted_col} Line Chart')
+display_line_chart = st.radio('Show Line Chart', ['Yes'], index=0)
+
+if display_line_chart == 'Yes':
+    # Line Chart
     column_data = df[['date', actual_col, predicted_col]]
     fig_line = px.line(
         column_data, x='date', y=[actual_col, predicted_col],
@@ -121,8 +117,12 @@ def display_line_chart(actual_col, predicted_col):
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
-# --- Function to display Performance Metrics ---
-def display_performance_metrics(actual_col, predicted_col):
+# --- 5. Performance Metrics ---
+st.subheader(f'{selected_column} vs {predicted_col} Performance Metrics')
+display_metrics = st.radio('Show Performance Metrics', ['Yes'], index=0)
+
+if display_metrics == 'Yes':
+    # Performance Metrics
     column_data = df[['date', actual_col, predicted_col]]
     last_7_days_data = column_data.tail(7)
     avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
@@ -138,8 +138,12 @@ def display_performance_metrics(actual_col, predicted_col):
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-# --- Function to display Pie Chart ---
-def display_pie_chart(actual_col, predicted_col):
+# --- 6. Pie Chart ---
+st.subheader(f'{selected_column} vs {predicted_col} Pie Chart')
+display_pie_chart = st.radio('Show Pie Chart', ['Yes'], index=0)
+
+if display_pie_chart == 'Yes':
+    # Pie Chart
     column_data = df[['date', actual_col, predicted_col]]
     within_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 <= 10])
     out_of_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 > 10])
@@ -150,16 +154,4 @@ def display_pie_chart(actual_col, predicted_col):
         color_discrete_sequence=['#FF6347', '#4682B4']
     )
     st.plotly_chart(fig_pie, use_container_width=True)
-
-# --- Display the Selected Charts and Metrics ---
-if show_bar_chart == 'Yes':
-    display_bar_chart(actual_col, predicted_col)
-
-if show_line_chart == 'Yes':
-    display_line_chart(actual_col, predicted_col)
-
-if show_metrics == 'Yes':
-    display_performance_metrics(actual_col, predicted_col)
-
-if show_pie_chart == 'Yes':
-    display_pie_chart(actual_col, predicted_col)
+    
