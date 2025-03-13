@@ -191,3 +191,9 @@ def display_data(actual_col, predicted_col):
     display_data(line_tab, f'EXP_{line_tab[:3].upper()}_{line_tab[3:].upper()}')
     display_data(metrics_tab, f'EXP_{metrics_tab[:3].upper()}_{metrics_tab[3:].upper()}')
     display_data(pie_tab, f'EXP_{pie_tab[:3].upper()}_{pie_tab[3:].upper()}')
+
+# Display data based on the selected tabs
+display_data(bar_tab, f'EXP_{bar_tab[:3].upper()}_{bar_tab[3:].upper()}')
+display_data(line_tab, f'EXP_{line_tab[:3].upper()}_{line_tab[3:].upper()}')
+display_data(metrics_tab, f'EXP_{metrics_tab[:3].upper()}_{metrics_tab[3:].upper()}')
+display_data(pie_tab, f'EXP_{pie_tab[:3].upper()}_{pie_tab[3:].upper()}')
