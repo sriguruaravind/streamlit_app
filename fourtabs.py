@@ -6,10 +6,12 @@ import plotly.express as px
 
 # Function to create synthetic data for 1 month
 def create_synthetic_data_for_one_month():
+    # Date range for the last month (30 days)
     end_date = datetime.today()
     start_date = end_date - timedelta(days=30)
     date_range = pd.date_range(start=start_date, end=end_date, freq='D')
 
+    # Randomized data for actual and predicted columns
     data = {
         'date': date_range,
         'PayopNew': np.random.randint(50, 100, size=len(date_range)),
@@ -21,6 +23,7 @@ def create_synthetic_data_for_one_month():
         'EXP_FREE_NEW': np.random.randint(100, 200, size=len(date_range)),
         'EXP_FREE_REV': np.random.randint(20, 80, size=len(date_range)),
     }
+    
     return pd.DataFrame(data)
 
 # Generate synthetic data for the last month (30 days)
@@ -30,11 +33,17 @@ df = create_synthetic_data_for_one_month()
 st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
+# Display the generated data as a table
+# st.subheader('Actual vs Predicted Data (Last 1 Month)')
+# st.write(df)
+
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
 
+# Calculate T-1 (previous day)
 previous_day = df['date'].max() - timedelta(days=1)
-t_minus_1_data = df[df['date'] == previous_day]
+
+t_minus_1_data = df[df['date'] == previous_day]  # Get T-1 day's data
 
 if not t_minus_1_data.empty:
     t_minus_1_date = t_minus_1_data['date'].iloc[0].strftime('%Y-%m-%d')
@@ -67,20 +76,24 @@ if not t_minus_1_data.empty:
     fig_combined.update_traces(textposition='outside')
     st.plotly_chart(fig_combined, use_container_width=True)
 else:
-    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.')
+    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
-# Radio button selections
-bar_tab = st.radio("Bar Chart Data", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-line_tab = st.radio("Line Chart Data", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-metrics_tab = st.radio("Metrics Data", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
-pie_tab = st.radio("Pie Chart Data", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
-# Function to display data based on selections
-def display_data(actual_col, predicted_col):
+# Tab selection for different columns
+tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+
+# Add a second radio button to select a comparison column
+tab_2 = st.radio("Select Comparison Column", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+
+# Function to create and display the charts and metrics
+def display_data_for_column(actual_col, predicted_col):
+    # Filter data for the selected column
     column_data = df[['date', actual_col, predicted_col]]
 
-    # Bar Chart
+    # Bar chart section
     st.subheader(f'Actual vs Predicted (Bar Chart) ({actual_col} vs {predicted_col})')
+
+    # Buttons to select data range for the bar chart
     selected_range_bar = 'Last 1 Week'
     col3, col4, col5 = st.columns([1, 1, 1])
 
@@ -117,8 +130,10 @@ def display_data(actual_col, predicted_col):
     fig_bar.update_traces(textposition='outside')
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # Line Chart
+    # Line chart section
     st.subheader(f'Actual vs Predicted (Line Chart) ({actual_col} vs {predicted_col})')
+
+    # Buttons to select data range for the line chart
     selected_range_line = 'All Time'
     col1, col2 = st.columns([1, 1])
 
@@ -146,7 +161,7 @@ def display_data(actual_col, predicted_col):
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
-    # Performance Metrics
+    # Performance metrics section for last 7 days
     st.subheader('Performance Metrics (Last 7 Days)')
     last_7_days_data = filtered_data_bar.tail(7)
     avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
@@ -186,8 +201,22 @@ def display_data(actual_col, predicted_col):
         else:
             st.info(f"No data available for {date_to_view}.")
 
-    # Display data based on the selected tabs
-    display_data(bar_tab, f'EXP_{bar_tab[:3].upper()}_{bar_tab[3:].upper()}')
-    display_data(line_tab, f'EXP_{line_tab[:3].upper()}_{line_tab[3:].upper()}')
-    display_data(metrics_tab, f'EXP_{metrics_tab[:3].upper()}_{metrics_tab[3:].upper()}')
-    display_data(pie_tab, f'EXP_{pie_tab[:3].upper()}_{pie_tab[3:].upper()}')
+# Display data based on the selected column
+if tab == "PayopNew":
+    display_data_for_column('PayopNew', 'EXP_PAY_NEW')
+elif tab == "PayopReview":
+    display_data_for_column('PayopReview', 'EXP_PAY_REV')
+elif tab == "FreeopNew":
+    display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
+else:
+    display_data_for_column('FreeopReview', 'EXP_FREE_REV')
+
+# Handle display based on the second radio button
+if tab_2 == "PayopNew":
+    display_data_for_column('PayopNew', 'EXP_PAY_NEW')
+elif tab_2 == "PayopReview":
+    display_data_for_column('PayopReview', 'EXP_PAY_REV')
+elif tab_2 == "FreeopNew":
+    display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
+else:
+    display_data_for_column('FreeopReview', 'EXP_FREE_REV')
