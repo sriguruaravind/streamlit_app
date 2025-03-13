@@ -33,10 +33,6 @@ df = create_synthetic_data_for_one_month()
 st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
-# Display the generated data as a table
-#st.subheader('Actual vs Predicted Data (Last 1 Month)')
-#st.write(df)
-
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
 
@@ -78,17 +74,14 @@ if not t_minus_1_data.empty:
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
-
-# Creating individual radio buttons for different graphs and metrics
-graph_tabs = st.radio("Select Graph Type", ["Bar Chart", "Line Chart", "Prediction Accuracy", "Metrics"], horizontal=True)
-
 # Function to create and display the charts and metrics for a selected category
-def display_data_for_column(actual_col, predicted_col, selected_tab):
+def display_data_for_column(actual_col, predicted_col):
     # Filter data for the selected column
     column_data = df[['date', actual_col, predicted_col]]
 
-    # Handling Bar Chart
-    if selected_tab == "Bar Chart":
+    # --- Bar Chart Section ---
+    show_bar_chart = st.checkbox(f"Show Bar Chart for {actual_col} vs {predicted_col}")
+    if show_bar_chart:
         st.subheader(f'Actual vs Predicted (Bar Chart) ({actual_col} vs {predicted_col})')
 
         selected_range_bar = 'Last 1 Week'
@@ -127,8 +120,9 @@ def display_data_for_column(actual_col, predicted_col, selected_tab):
         fig_bar.update_traces(textposition='outside')
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    # Handling Line Chart
-    if selected_tab == "Line Chart":
+    # --- Line Chart Section ---
+    show_line_chart = st.checkbox(f"Show Line Chart for {actual_col} vs {predicted_col}")
+    if show_line_chart:
         st.subheader(f'Actual vs Predicted (Line Chart) ({actual_col} vs {predicted_col})')
 
         selected_range_line = 'All Time'
@@ -158,8 +152,9 @@ def display_data_for_column(actual_col, predicted_col, selected_tab):
         )
         st.plotly_chart(fig_line, use_container_width=True)
 
-    # Handling Prediction Accuracy Pie Chart
-    if selected_tab == "Prediction Accuracy":
+    # --- Prediction Accuracy Pie Chart ---
+    show_pie_chart = st.checkbox(f"Show Prediction Accuracy for {actual_col} vs {predicted_col}")
+    if show_pie_chart:
         st.subheader('Prediction Accuracy')
         within_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 <= 10])
         out_of_range = len(column_data[abs(column_data[actual_col] - column_data[predicted_col]) / column_data[actual_col] * 100 > 10])
@@ -171,8 +166,9 @@ def display_data_for_column(actual_col, predicted_col, selected_tab):
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
-    # Handling Performance Metrics
-    if selected_tab == "Metrics":
+    # --- Performance Metrics ---
+    show_metrics = st.checkbox(f"Show Performance Metrics for {actual_col} vs {predicted_col}")
+    if show_metrics:
         st.subheader('Performance Metrics (Last 7 Days)')
         last_7_days_data = column_data.tail(7)
         avg_deviation_7d = round((abs(last_7_days_data[actual_col] - last_7_days_data[predicted_col]) / last_7_days_data[actual_col] * 100).mean(), 2)
@@ -188,14 +184,14 @@ def display_data_for_column(actual_col, predicted_col, selected_tab):
         col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
         col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-# Select tab for a specific category (PayopNew, PayopReview, FreeopNew, FreeopReview)
+# Select category (PayopNew, PayopReview, FreeopNew, FreeopReview)
 tab = st.radio("Select Category", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
 if tab == "PayopNew":
-    display_data_for_column('PayopNew', 'EXP_PAY_NEW', graph_tabs)
+    display_data_for_column('PayopNew', 'EXP_PAY_NEW')
 elif tab == "PayopReview":
-    display_data_for_column('PayopReview', 'EXP_PAY_REV', graph_tabs)
+    display_data_for_column('PayopReview', 'EXP_PAY_REV')
 elif tab == "FreeopNew":
-    display_data_for_column('FreeopNew', 'EXP_FREE_NEW', graph_tabs)
+    display_data_for_column('FreeopNew', 'EXP_FREE_NEW')
 else:
-    display_data_for_column('FreeopReview', 'EXP_FREE_REV', graph_tabs)
+    display_data_for_column('FreeopReview', 'EXP_FREE_REV')
