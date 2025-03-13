@@ -118,8 +118,8 @@ def display_data_for_column(actual_col, predicted_col):
     else:
         filtered_data_bar = column_data
 
-# Tab selection for different columns
-tab1 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+    # Tab selection for different columns
+    tab1 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
     
     fig_bar = px.bar(
         filtered_data_bar, x='date', y=[actual_col, predicted_col],
@@ -161,8 +161,8 @@ tab1 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopRe
     )
     st.plotly_chart(fig_line, use_container_width=True)
 
-# Tab selection for different columns
-tab2 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+    # Tab selection for different columns
+    tab2 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
     # Performance metrics section for last 7 days
     st.subheader('Performance Metrics (Last 7 Days)')
@@ -180,8 +180,8 @@ tab2 = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopRe
     col3.metric(label='📉 Lowest Deviation Day', value=f'{round((abs(lowest_deviation_day[actual_col] - lowest_deviation_day[predicted_col]) / lowest_deviation_day[actual_col] * 100), 2)}%')
     col4.metric(label='📈 Highest Deviation Day', value=f'{round((abs(highest_deviation_day[actual_col] - highest_deviation_day[predicted_col]) / highest_deviation_day[actual_col] * 100), 2)}%')
 
-# Tab selection for different columns
-tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+    # Tab selection for different columns
+    tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
     # Prediction accuracy pie chart
     st.subheader('Prediction Accuracy')
