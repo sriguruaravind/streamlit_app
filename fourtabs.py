@@ -33,50 +33,54 @@ df = create_synthetic_data_for_one_month()
 st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
+# Display the generated data as a table
+#st.subheader('Actual vs Predicted Data (Last 1 Month)')
+#st.write(df)
+
 # --- Combined Bar Chart for T-1 Day ---
 st.subheader('Actual vs Predicted for Last Day')
 
 # Calculate T-1 (previous day)
 previous_day = df['date'].max() - timedelta(days=1)
+
 t_minus_1_data = df[df['date'] == previous_day]  # Get T-1 day's data
 
 if not t_minus_1_data.empty:
     t_minus_1_date = t_minus_1_data['date'].iloc[0].strftime('%Y-%m-%d')
+    actual_values = [
+        t_minus_1_data['PayopNew'].iloc[0],
+        t_minus_1_data['PayopReview'].iloc[0],
+        t_minus_1_data['FreeopNew'].iloc[0],
+        t_minus_1_data['FreeopReview'].iloc[0]
+    ]
+    predicted_values = [
+        t_minus_1_data['EXP_PAY_NEW'].iloc[0],
+        t_minus_1_data['EXP_PAY_REV'].iloc[0],
+        t_minus_1_data['EXP_FREE_NEW'].iloc[0],
+        t_minus_1_data['EXP_FREE_REV'].iloc[0]
+    ]
+    categories = ['PayopNew', 'PayopReview', 'FreeopNew', 'FreeopReview']
 
-    # Default columns to display (PayopNew and EXP_PAY_NEW)
-    actual_col = 'PayopNew'
-    predicted_col = 'EXP_PAY_NEW'
+    combined_df = pd.DataFrame({
+        'Category': categories * 2,
+        'Value': actual_values + predicted_values,
+        'Type': ['Actual'] * 4 + ['Predicted'] * 4
+    })
 
-    # Getting the actual and predicted values for the selected column
-    actual_values = [t_minus_1_data[actual_col].iloc[0]]
-    predicted_values = [t_minus_1_data[predicted_col].iloc[0]]
-    
-    categories = [actual_col, predicted_col]
-
-    # Ensure that categories, actual_values, and predicted_values have the same length
-    if len(actual_values) == len(predicted_values):
-        combined_df = pd.DataFrame({
-            'Category': categories,
-            'Value': actual_values + predicted_values,
-            'Type': ['Actual'] + ['Predicted']
-        })
-
-        fig_combined = px.bar(
-            combined_df, x='Category', y='Value', color='Type',
-            title=f'Actual vs Predicted for {t_minus_1_date}',
-            barmode='group', color_discrete_sequence=['#FF6347', '#4682B4'],
-            text_auto=True
-        )
-        fig_combined.update_traces(textposition='outside')
-        st.plotly_chart(fig_combined, use_container_width=True)
-    else:
-        st.error('Mismatch in the number of actual and predicted values.')
+    fig_combined = px.bar(
+        combined_df, x='Category', y='Value', color='Type',
+        title=f'Actual vs Predicted for {t_minus_1_date}',
+        barmode='group', color_discrete_sequence=['#FF6347', '#4682B4'],
+        text_auto=True
+    )
+    fig_combined.update_traces(textposition='outside')
+    st.plotly_chart(fig_combined, use_container_width=True)
 else:
-    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.')
-  
+    st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
-# Tab selection for different columns (radio button for selection)
-tab = st.radio("Select Column to Predict", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
+
+# Tab selection for different columns
+tab = st.radio("Select Tab", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], horizontal=True)
 
 # Function to create and display the charts and metrics
 def display_data_for_column(actual_col, predicted_col):
