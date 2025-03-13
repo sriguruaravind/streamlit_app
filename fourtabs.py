@@ -33,7 +33,7 @@ df = create_synthetic_data_for_one_month()
 st.set_page_config(layout="wide")
 st.title('Actual vs Predicted Dashboard')
 
-# --- Display the graph showing yesterday's values ---
+# --- 1. Graph showing yesterday's values ---
 st.subheader('Actual vs Predicted for Last Day')
 
 # Calculate T-1 (previous day)
@@ -73,7 +73,7 @@ if not t_minus_1_data.empty:
 else:
     st.info(f'No data available for {previous_day.strftime("%Y-%m-%d")}.') 
 
-# --- Radio Button to Select Category ---
+# --- 2. Radio Button to Select Column to Predict ---
 selected_column = st.radio("Select Column to View Prediction", ["PayopNew", "PayopReview", "FreeopNew", "FreeopReview"], index=0, horizontal=True)
 
 # Mapping for the selected column to the respective predicted column
@@ -87,10 +87,16 @@ column_mapping = {
 actual_col = selected_column
 predicted_col = column_mapping[selected_column]
 
-# --- Radio Button to Select Graph Type ---
+# --- 3. Bar Chart ---
 show_bar_chart = st.radio('Show Bar Chart', ['Yes', 'No'], index=0)
+
+# --- 4. Radio Button to Select the Line Chart ---
 show_line_chart = st.radio('Show Line Chart', ['Yes', 'No'], index=0)
+
+# --- 5. Line Chart ---
 show_metrics = st.radio('Show Performance Metrics', ['Yes', 'No'], index=0)
+
+# --- 6. Performance Metrics ---
 show_pie_chart = st.radio('Show Pie Chart', ['Yes', 'No'], index=0)
 
 # --- Function to create and display the Bar Chart ---
